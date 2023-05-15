@@ -40,9 +40,25 @@
 ;; Finally, the 'org-footnote-assistant--goto-definition' function moves the
 ;; point to the definition of the specified footnote label.
 
+
+;; TODO: If the main buffer changes, the editor buffer should be regenerated.
+
+
 ;;; Code:
 
+
 (defconst org-footnote-reference-re "[^\n]\\[fn:\\(?:\\(?1:[-_[:word:]]+\\)?\\(:\\)\\|\\(?1:[-_[:word:]]+\\)\\]\\)")
+
+;; TODO
+(defun org-footnote-assistant--current-buffer-related-to-editor-p ()
+  "Check if the current buffer is related to the indirect buffer '*footnote-editor*'."
+  (let* ((cur-buf (current-buffer))
+         (edit-buf (get-buffer "*footnote-editor*")))
+  (with-current-buffer edit-buf
+    (if (eq (buffer-base-buffer) cur-buf)
+        t
+      nil
+        ))))
 
 (defun org-footnote-assistant--delete-editor-window ()
   "Kill the buffer if it already exists."
@@ -51,7 +67,8 @@
   )
 
 (defun org-footnote-assistant--show-definition ()
-  "Narrows the buffer to the region of the current footnote definition, if the point is currently at a footnote reference."
+  "Narrows the buffer to the region of the current footnote
+definition, if the point is currently at a footnote reference."
   (interactive)
   (when (org-footnote-at-reference-p)
     ;; Get the label of the current footnote.
@@ -66,7 +83,7 @@
   ;; First, we get the buffer named "*footnote-editor*" if it exists.
   (let ((buf (get-buffer "*footnote-editor*")))
     ;; If the buffer exists, we select it and narrow to the footnote definition region.
-    (if buf
+    (if (and buf (org-footnote-assistant--current-buffer-related-to-editor-p))
         (with-current-buffer buf
           ;; Then, we narrow to the footnote definition region.
           (narrow-to-region begin end)
@@ -82,7 +99,8 @@
         ))))
 
 (defun org-footnote-assistant--goto-next-footnote (&optional backward)
-  "Finds the next footnote and opens the narrowed buffer. If BACKWARD is non-nil, it finds the previous reference."
+  "Finds the next footnote and opens the narrowed buffer. If
+BACKWARD is non-nil, it finds the previous reference."
   (interactive)
 
   ;; If we're in the *footnote-editor* buffer...
@@ -116,7 +134,7 @@ for (org-footnote-assistant--goto-next-footnote t)"
   )
 
 (defun org-footnote-assistant--goto-definition (label &optional location)
-  "Modified version of org-footnote-goto-definition that integrates
+  "Modified version of 'org-footnote-goto-definition' that integrates
 'org-footnote-assistant--create-editor-window' Move point to the
 definition of the footnote LABEL.
 
