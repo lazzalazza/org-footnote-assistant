@@ -4,7 +4,7 @@
 ;; Maintainer: Andrea Lazzarini
 ;; Version: 0.01
 ;; Package-Requires: ((org "8.0.0"))
-;; Homepage: homepage
+;; Homepage: https://github.com/lazzalazza/org-footnote-assistant/
 ;; Keywords: org-footnote, org-mode
 
 ;; This file is not part of GNU Emacs
@@ -193,7 +193,7 @@ value if point was successfully moved."
 
 (provide 'org-footnote-assistant)
 
-;;; name.el ends here
+;;; org-footnote-assistant.el ends here
 
 
 
