@@ -37,16 +37,12 @@
 ;; "*footnote-editor*", narrows it to the footnote definition region, and
 ;; switches to it. The 'org-footnote-assistant--goto-next-footnote' function
 ;; finds the next or previous footnote reference and opens the narrowed buffer.
-;; The 'org-footnote-new-advice' function is an advice function that adds the
-;; ability to automatically jump to the definition of a newly-created footnote
-;; after it has been inserted. Finally, the
-;; 'org-footnote-assistant--goto-definition' function moves the point to the
-;; definition of the specified footnote label.
+;; Finally, the 'org-footnote-assistant--goto-definition' function moves the
+;; point to the definition of the specified footnote label.
 
 ;;; Code:
 
 (defconst org-footnote-reference-re "[^\n]\\[fn:\\(?:\\(?1:[-_[:word:]]+\\)?\\(:\\)\\|\\(?1:[-_[:word:]]+\\)\\]\\)")
-
 
 (defun org-footnote-assistant--delete-editor-window ()
   "Kill the buffer if it already exists."
@@ -63,7 +59,6 @@
            ;; Get the beginning and end of the footnote definition region.
            (definition-begin (nth 1 (org-footnote-get-definition label)))
            (definition-end (nth 2 (org-footnote-get-definition label))))
-      (message "%d %d" definition-begin  definition-end)
       (org-footnote-assistant--create-editor-window definition-begin definition-end)
       )))
 
@@ -73,6 +68,7 @@
     ;; If the buffer exists, we select it and narrow to the footnote definition region.
     (if buf
         (with-current-buffer buf
+          (message "Uno")
           ;; Then, we narrow to the footnote definition region.
           (narrow-to-region begin end)
           ;; Finally, we display the buffer.
@@ -81,10 +77,10 @@
           )
       ;; If the buffer does not exist, we create a new indirect buffer and switch to it.
       (progn
+        (message "Due")
         (switch-to-buffer-other-window (clone-indirect-buffer "*footnote-editor*" nil))
         ;; Narrow to the footnote definition region.
         (narrow-to-region begin end)
-        (beginning-of-buffer)
         ))))
 
 (defun org-footnote-assistant--goto-next-footnote (&optional backward)
@@ -121,14 +117,6 @@ for (org-footnote-assistant--goto-next-footnote t)"
   (org-footnote-assistant--goto-next-footnote t)
   )
 
-(defun org-footnote-new-advice (orig-fun &rest args)
-  (save-excursion
-  (apply orig-fun args))
-  (org-footnote-assistant--show-definition)
-  (search-forward org-footnote-reference-re nil t)
-  (goto-char (match-end 0))
-  )
-
 (defun org-footnote-assistant--goto-definition (label &optional location)
   "Modified version of org-footnote-goto-definition that integrates
 'org-footnote-assistant--create-editor-window' Move point to the
@@ -163,12 +151,10 @@ value if point was successfully moved."
 
 
 (defun org-footnote-assistant--add-advices ()
-  (advice-add 'org-footnote-new :around #'org-footnote-new-advice)
   (advice-add 'org-footnote-goto-definition :override #'org-footnote-assistant--goto-definition)
   )
 
 (defun org-footnote-assistant--remove-advices ()
-  (advice-remove 'org-footnote-new 'org-footnote-new-advice)
   (advice-remove 'org-footnote-goto-definition 'org-footnote-assistant--goto-definition)
   )
 
