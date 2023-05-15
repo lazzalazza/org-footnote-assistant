@@ -25,4 +25,4 @@ footnote reference and opens the narrowed buffer. The
 'org-footnote-assistant--goto-definition' temporarily overwrites the
 org-footnote-goto-definition to work with the side buffer.
 
-![Org-footnote-assistant](./org-footnote-assistant.png)
+![Org-footnote-assistant](./ofa.png)
