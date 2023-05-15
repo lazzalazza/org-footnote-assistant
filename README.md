@@ -18,3 +18,5 @@ function is an advice function that adds the ability to automatically jump to
 the definition of a newly-created footnote after it has been inserted. Finally,
 the 'org-footnote-assistant--goto-definition' function moves the point to the
 definition of the specified footnote label.
+
+![Org-footnote-assistant](./org-footnote-assistant.png)
