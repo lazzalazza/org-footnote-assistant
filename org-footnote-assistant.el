@@ -68,16 +68,14 @@
     ;; If the buffer exists, we select it and narrow to the footnote definition region.
     (if buf
         (with-current-buffer buf
-          (message "Uno")
           ;; Then, we narrow to the footnote definition region.
           (narrow-to-region begin end)
           ;; Finally, we display the buffer.
-          (pop-to-buffer (current-buffer) t)
+          (pop-to-buffer buf t)
           (beginning-of-buffer)
           )
       ;; If the buffer does not exist, we create a new indirect buffer and switch to it.
       (progn
-        (message "Due")
         (switch-to-buffer-other-window (clone-indirect-buffer "*footnote-editor*" nil))
         ;; Narrow to the footnote definition region.
         (narrow-to-region begin end)
@@ -138,7 +136,6 @@ value if point was successfully moved."
      ((or (> def-start (point-max)) (< def-start (point-min)))
       (user-error "Definition is outside narrowed part of buffer")))
     ;; (org-mark-ring-push)
-    (print (concat (number-to-string def-start) " " (number-to-string def-end)))
     (org-footnote-assistant--create-editor-window def-start def-end)
     (looking-at (format "\\[fn:%s[]:]" (regexp-quote label)))
     (goto-char (match-end 0))
