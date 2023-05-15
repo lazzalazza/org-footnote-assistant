@@ -1,5 +1,6 @@
 # Org-footnote-assistant
-A minor mode for editing and browsing org-footnotes from a sidebar
+A minor mode for editing and browsing org-footnotes from an indirect buffer in a
+side window.
 
 
 This package provides additional functionality to Emacs Org mode for handling
