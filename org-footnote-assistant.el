@@ -40,22 +40,17 @@
 ;; Finally, the 'org-footnote-assistant--goto-definition' function moves the
 ;; point to the definition of the specified footnote label.
 
-
-;; TODO: If the main buffer changes, the editor buffer should be regenerated.
-
-
 ;;; Code:
-
 
 (defconst org-footnote-reference-re "[^\n]\\[fn:\\(?:\\(?1:[-_[:word:]]+\\)?\\(:\\)\\|\\(?1:[-_[:word:]]+\\)\\]\\)")
 
-;; TODO
 (defun org-footnote-assistant--current-buffer-related-to-editor-p ()
-  "Check if the current buffer is related to the indirect buffer '*footnote-editor*'."
+  "Check if the current buffer is the indirect buffer
+'*footnote-editor*' or is related to it."
   (let* ((cur-buf (current-buffer))
          (edit-buf (get-buffer "*footnote-editor*")))
   (with-current-buffer edit-buf
-    (if (eq (buffer-base-buffer) cur-buf)
+    (if (or (eq cur-buf edit-buf) (eq (buffer-base-buffer) cur-buf))
         t
       nil
         ))))
@@ -80,23 +75,27 @@ definition, if the point is currently at a footnote reference."
       )))
 
 (defun org-footnote-assistant--create-editor-window (begin end)
-  ;; First, we get the buffer named "*footnote-editor*" if it exists.
   (let ((buf (get-buffer "*footnote-editor*")))
-    ;; If the buffer exists, we select it and narrow to the footnote definition region.
-    (if (and buf (org-footnote-assistant--current-buffer-related-to-editor-p))
-        (with-current-buffer buf
-          ;; Then, we narrow to the footnote definition region.
-          (narrow-to-region begin end)
-          ;; Finally, we display the buffer.
-          (pop-to-buffer buf t)
-          (beginning-of-buffer)
-          )
-      ;; If the buffer does not exist, we create a new indirect buffer and switch to it.
-      (progn
-        (switch-to-buffer-other-window (clone-indirect-buffer "*footnote-editor*" nil))
-        ;; Narrow to the footnote definition region.
-        (narrow-to-region begin end)
-        ))))
+    (if buf
+        (if (org-footnote-assistant--current-buffer-related-to-editor-p)
+            ;; If the buffer exists and is related to the current buffer,
+            ;; narrow to the footnote definition region and display the buffer.
+            (with-current-buffer buf
+              (narrow-to-region begin end)
+              (pop-to-buffer buf t)
+              (beginning-of-buffer))
+          ;; If the buffer exists but is not related to the current buffer,
+          ;; kill it and create a new indirect buffer.
+          (progn
+            (kill-buffer buf)
+            (setq buf nil))))
+    ;; If the buffer does not exist, create a new indirect buffer.
+    (unless buf
+      (setq buf (switch-to-buffer-other-window (clone-indirect-buffer "*footnote-editor*" nil))))
+
+    ;; Narrow to the footnote definition region in the buffer.
+    (with-current-buffer buf
+      (narrow-to-region begin end))))
 
 (defun org-footnote-assistant--goto-next-footnote (&optional backward)
   "Finds the next footnote and opens the narrowed buffer. If
@@ -164,14 +163,23 @@ value if point was successfully moved."
 `\\[org-mark-ring-goto]' or, if unique, with `\\[org-ctrl-c-ctrl-c]'.")))
     t))
 
+(defun org-goto-previous-reference-advice (orig-fun &rest args)
+  (if (eq (current-buffer) (get-buffer "*footnote-editor*"))
+      (let ((base-buffer (buffer-base-buffer)))
+        (if (get-buffer-window base-buffer)
+            (select-window (get-buffer-window base-buffer))
+          (switch-to-buffer-other-window base-buffer))))
+  (apply orig-fun args))
 
 (defun org-footnote-assistant--add-advices ()
   (advice-add 'org-footnote-goto-definition :override #'org-footnote-assistant--goto-definition)
+  (advice-add 'org-footnote-goto-previous-reference :around #'org-goto-previous-reference-advice)
   )
 
 (defun org-footnote-assistant--remove-advices ()
   (advice-remove 'org-footnote-goto-definition 'org-footnote-assistant--goto-definition)
-  )
+  (advice-remove 'org-footnote-goto-previous-reference 'org-goto-previous-reference-advice)
+ )
 
 ;;; Minor mode
 
