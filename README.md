@@ -25,7 +25,7 @@ working with footnotes in Org Mode.
 
 ## Functionality
 
-The package defines a minor mode called **org-footnote-assistant-mode** that can
+The package defines a minor mode called `org-footnote-assistant-mode` that can
 be toggled on or off. When activated, it adds several keybindings to the Org
 Mode keymap to facilitate working with footnotes.
 
