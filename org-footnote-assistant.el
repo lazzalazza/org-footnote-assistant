@@ -181,7 +181,16 @@ value if point was successfully moved."
   (advice-remove 'org-footnote-goto-previous-reference 'org-goto-previous-reference-advice)
  )
 
+
+
+
 ;;; Minor mode
+
+(defvar org-footnote-assistant-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-n") 'org-footnote-assistant--goto-next-footnote)
+    (define-key map (kbd "C-c C-p") 'org-footnote-assistant--goto-previous-footnote)
+    map))
 
 (define-minor-mode org-footnote-assistant-mode
   "Toggles org-footnote-assistant-mode"
@@ -189,6 +198,7 @@ value if point was successfully moved."
   :global t
   :group 'org
   :lighter " ofa"
+  :keymap org-footnote-assistant-mode-map
 
   (if org-footnote-assistant-mode
       (progn
