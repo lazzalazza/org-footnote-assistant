@@ -27,8 +27,8 @@
 
 ;; This package provides additional functionality to Emacs Org mode for handling
 ;; footnotes. It defines functions that allow the user to navigate between
-;; footnote references and their definitions, and to edit the definitions in a
-;; separate buffer.
+;; footnote references and their definitions, edit the definitions in a separate
+;; buffer, and delete footnotes.
 
 ;; The 'org-footnote-assistant--show-definition' function narrows the buffer to
 ;; the region of the current footnote definition, if the point is currently at a
@@ -37,8 +37,11 @@
 ;; "*footnote-editor*", narrows it to the footnote definition region, and
 ;; switches to it. The 'org-footnote-assistant--goto-next-footnote' function
 ;; finds the next or previous footnote reference and opens the narrowed buffer.
-;; Finally, the 'org-footnote-assistant--goto-definition' function moves the
-;; point to the definition of the specified footnote label.
+;; The 'org-footnote-assistant--goto-definition' function moves the point to the
+;; definition of the specified footnote label.
+;; 'org-footnote-assistant-delete-footnote' prompts for confirmation before
+;; deleting the footnote. However, you can customize this behavior by setting
+;; the variable 'org-footnote-assistant-ask-before-delete' to nil.
 
 ;;; Code:
 
