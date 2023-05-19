@@ -42,7 +42,20 @@
 
 ;;; Code:
 
+
+;;; Constants and customization
+
 (defconst org-footnote-reference-re "[^\n]\\[fn:\\(?:\\(?1:[-_[:word:]]+\\)?\\(:\\)\\|\\(?1:[-_[:word:]]+\\)\\]\\)")
+
+(defcustom org-footnote-assistant-ask-before-delete t
+  "Whether to ask for permission before deleting a footnote."
+  :type 'boolean
+  :group 'org-footnote-assistant-mode) ;; the org-footnote-assistant-mode is
+                                       ;; automatically set by the
+                                       ;; define-minor-mode command
+
+
+;;; Footnote editor / base buffer management functions
 
 (defun org-footnote-assistant--current-buffer-related-to-editor-p ()
   "Check if the current buffer is the indirect buffer
@@ -97,6 +110,9 @@ definition, if the point is currently at a footnote reference."
     (with-current-buffer buf
       (narrow-to-region begin end))))
 
+
+;;; Scrolling functions
+
 (defun org-footnote-assistant--goto-next-footnote (&optional backward)
   "Finds the next footnote and opens the narrowed buffer. If
 BACKWARD is non-nil, it finds the previous reference."
@@ -131,6 +147,39 @@ for (org-footnote-assistant--goto-next-footnote t)"
   (interactive)
   (org-footnote-assistant--goto-next-footnote t)
   )
+
+
+;; Delete footnote
+
+(defun org-footnote-assistant-delete-footnote ()
+  "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
+  (interactive)
+  (if (or (not org-footnote-assistant-ask-before-delete)
+          (y-or-n-p (concat "Really delete footnote " (org-footnote-assistant--get-label) "? ")))
+      (progn
+        (if (org-footnote-at-definition-p)
+            (org-footnote-goto-previous-reference (org-footnote-assistant--get-label)))
+        (org-footnote-delete))))
+
+;; TODO This getter is not useful as it is: see if it can be used elsewhere or
+;; rewrite the 'org-footnote-assistant-delete-footnote' function
+(defun org-footnote-assistant--get-label ()
+  "Return the footnote reference number at point.
+   If the cursor is inside a footnote reference, return the reference number.
+   If the cursor is inside a footnote definition, return the number of the definition.
+   If the cursor is not inside a footnote, return nil."
+  (cond
+   ;; Check if cursor is inside a footnote reference
+   ((org-footnote-at-reference-p)
+    (car (org-footnote-at-reference-p)))
+   ;; Check if cursor is inside a footnote definition
+   ((org-footnote-at-definition-p)
+    (car (org-footnote-at-definition-p)))
+   ;; Cursor is not inside a footnote
+   (t nil)))
+
+
+;;; Advised functions: they modify the behavior of org-footnote.el functions
 
 (defun org-footnote-assistant--goto-definition (label &optional location)
   "Modified version of 'org-footnote-goto-definition' that integrates
@@ -171,6 +220,8 @@ value if point was successfully moved."
           (switch-to-buffer-other-window base-buffer))))
   (apply orig-fun args))
 
+;;; Advice management
+
 (defun org-footnote-assistant--add-advices ()
   (advice-add 'org-footnote-goto-definition :override #'org-footnote-assistant--goto-definition)
   (advice-add 'org-footnote-goto-previous-reference :around #'org-goto-previous-reference-advice)
@@ -181,9 +232,7 @@ value if point was successfully moved."
   (advice-remove 'org-footnote-goto-previous-reference 'org-goto-previous-reference-advice)
  )
 
-
-
-
+
 ;;; Minor mode
 
 (defvar org-footnote-assistant-mode-map
@@ -198,7 +247,6 @@ value if point was successfully moved."
   :global t
   :group 'org
   :lighter " ofa"
-  :keymap org-footnote-assistant-mode-map
 
   (if org-footnote-assistant-mode
       (progn
