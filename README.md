@@ -9,7 +9,7 @@ The package **org-footnote-assistant** is designed to enhance the functionality
 of footnotes in Org Mode. It provides additional features and keybindings to
 assist in navigating, editing, and managing footnotes within an Org Mode buffer.
 
-## Improved Footnote Viewing
+## Improved Footnote Viewing and Editing
 
 This package might offer a solution to the limited inline viewing of Org Mode
 footnotes, which can often hinder the reviewing and modification of content. In
@@ -37,6 +37,7 @@ Here is an overview of the functionality provided by **org-footnote-assistant**:
    footnote reference in the buffer, while `C-c C-p`
    (`org-footnote-assistant--goto-previous-footnote`) moves to the previous
    footnote reference.
+
 2. **Definition Display:** The command `org-footnote-assistant--show-definition`
    narrows the buffer to the region of the current footnote definition if the
    cursor is positioned at a footnote reference. It retrieves the label of the
@@ -66,6 +67,13 @@ Here is an overview of the functionality provided by **org-footnote-assistant**:
    with `org-goto-previous-reference-advice`. This advice ensures that if the
    current buffer is the "*footnote-editor*" buffer, the focus is switched to
    the base buffer where the original footnote reference was found.
+
+6. **Eeasier Footnote Deletion:** To delete a footnote, you can use the
+   `org-footnote-assistant-delete-footnote` function. By default, this function
+   prompts for confirmation before deleting the footnote. However, you can
+   customize this behavior by setting the variable
+   `org-footnote-assistant-ask-before-delete` to nil in your Emacs configuration
+   file.
 
 In summary, "org-footnote-assistant" provides convenient keybindings for
 navigating between footnote references, displaying the definitions in an
