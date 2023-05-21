@@ -55,8 +55,8 @@ Here is an overview of the functionality provided by **org-footnote-assistant**:
    created. If the buffer does not exist, a new indirect buffer is created.
 
 4. **Customized Footnote Definition Jumping:** The package overrides the default
-   behavior of `org-footnote-goto-definition` with the modified function
-   `org-footnote-assistant-goto-definition`. This function integrates with
+   behavior of `org-footnote-goto--definition` with the modified function
+   `org-footnote-assistant--goto-definition`. This function integrates with
    `org-footnote-assistant--create-editor-window` to jump to the definition of a
    specified footnote label. It narrows the buffer to the definition region and
    positions the cursor at the appropriate location.
