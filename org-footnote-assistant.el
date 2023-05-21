@@ -177,10 +177,12 @@ for (org-footnote-assistant-goto-next-footnote t)"
 (defun org-footnote-assistant-delete-footnote ()
   "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
   (interactive)
-  (let* ((label (org-footnote-assistant--get-label)))
   (if (or (not org-footnote-assistant-ask-before-delete)
-          (y-or-n-p (concat "Really delete footnote " label "? ")))
-        (org-footnote-delete label))))
+          (y-or-n-p (concat "Really delete footnote " (org-footnote-assistant--get-label) "? ")))
+      (progn
+        (if (org-footnote-at-definition-p)
+            (org-footnote-goto-previous-reference (org-footnote-assistant--get-label)))
+        (org-footnote-delete))))
 
 
 ;;; Advised functions: they modify the behavior of org-footnote.el functions
