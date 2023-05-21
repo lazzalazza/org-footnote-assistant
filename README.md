@@ -33,9 +33,9 @@ Here is an overview of the functionality provided by **org-footnote-assistant**:
 
 1. **Navigation:** The package allows you to quickly navigate between footnote
    references in an Org Mode buffer. The keybinding `C-c C-n`
-   (`org-footnote-assistant--goto-next-footnote`) moves the cursor to the next
+   (`org-footnote-assistant-goto-next-footnote`) moves the cursor to the next
    footnote reference in the buffer, while `C-c C-p`
-   (`org-footnote-assistant--goto-previous-footnote`) moves to the previous
+   (`org-footnote-assistant-goto-previous-footnote`) moves to the previous
    footnote reference.
 
 2. **Definition Display:** The command `org-footnote-assistant--show-definition`
@@ -56,7 +56,7 @@ Here is an overview of the functionality provided by **org-footnote-assistant**:
 
 4. **Customized Footnote Definition Jumping:** The package overrides the default
    behavior of `org-footnote-goto-definition` with the modified function
-   `org-footnote-assistant--goto-definition`. This function integrates with
+   `org-footnote-assistant-goto-definition`. This function integrates with
    `org-footnote-assistant--create-editor-window` to jump to the definition of a
    specified footnote label. It narrows the buffer to the definition region and
    positions the cursor at the appropriate location.
