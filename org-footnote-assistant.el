@@ -139,6 +139,7 @@ definition, if the point is currently at a footnote reference."
 
 ;;; Scrolling functions
 
+;;;###autoload
 (defun org-footnote-assistant-goto-next-footnote (&optional backward)
   "Finds the next footnote and opens the narrowed buffer. If
 BACKWARD is non-nil, it finds the previous reference."
@@ -167,6 +168,7 @@ BACKWARD is non-nil, it finds the previous reference."
         (forward-char)
         (org-footnote-assistant--show-definition)))))
 
+;;;###autoload
 (defun org-footnote-assistant-goto-previous-footnote ()
   "Searches previous footnote reference. A wrapper
 for (org-footnote-assistant-goto-next-footnote t)"
@@ -177,6 +179,7 @@ for (org-footnote-assistant-goto-next-footnote t)"
 
 ;; Footnote editing/deleting functions
 
+;;;###autoload
 (defun org-footnote-assistant-delete-footnote ()
   "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
   (interactive)
@@ -225,6 +228,7 @@ value if point was successfully moved."
 `\\[org-mark-ring-goto]' or, if unique, with `\\[org-ctrl-c-ctrl-c]'.")))
     t))
 
+;;;###autoload
 (defun org-goto-previous-reference-advice (orig-fun &rest args)
   (if (eq (current-buffer) (get-buffer "*footnote-editor*"))
       (let ((base-buffer (buffer-base-buffer)))
