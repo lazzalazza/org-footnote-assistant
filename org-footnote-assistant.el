@@ -45,6 +45,9 @@
 
 ;;; Code:
 
+;; Dependencies
+(require 'org)
+
 
 ;;; Constants and customization
 
@@ -86,33 +89,31 @@
 '*footnote-editor*' or is related to it."
   (let* ((cur-buf (current-buffer))
          (edit-buf (get-buffer "*footnote-editor*")))
-  (with-current-buffer edit-buf
-    (if (or (eq cur-buf edit-buf) (eq (buffer-base-buffer) cur-buf))
-        t
-      nil))))
+    (with-current-buffer edit-buf
+      (if (or (eq cur-buf edit-buf) (eq (buffer-base-buffer) cur-buf))
+          t
+        nil))))
 
 (defun org-footnote-assistant--delete-editor-window ()
   "Kill the buffer if it already exists."
   (when (get-buffer "*footnote-editor*")
-    (kill-buffer "*footnote-editor*"))
-  )
+    (kill-buffer "*footnote-editor*")))
 
 (defun org-footnote-assistant--show-definition ()
   "Narrows the buffer to the region of the current footnote
 definition, if the point is currently at a footnote reference."
-  (interactive)
+  (interactive "i" org-mode)
   (when (org-footnote-at-reference-p)
     ;; Get the label of the current footnote.
     (let* ((label (org-element-property :label (org-element-context)))
            ;; Get the beginning and end of the footnote definition region.
            (definition-begin (nth 1 (org-footnote-get-definition label)))
            (definition-end (nth 2 (org-footnote-get-definition label))))
-      (org-footnote-assistant--create-editor-window definition-begin definition-end)
-      )))
+      (org-footnote-assistant--create-editor-window definition-begin definition-end))))
 
 (defun org-footnote-assistant--create-editor-window (begin end)
   (let ((buf (get-buffer "*footnote-editor*")))
-    (if buf
+    (when buf
         (if (org-footnote-assistant--current-buffer-related-to-editor-p)
             ;; If the buffer exists and is related to the current buffer,
             ;; narrow to the footnote definition region and display the buffer.
@@ -136,13 +137,14 @@ definition, if the point is currently at a footnote reference."
 
 ;;; Scrolling functions
 
+;;;###autoload
 (defun org-footnote-assistant-goto-next-footnote (&optional backward)
   "Finds the next footnote and opens the narrowed buffer. If
 BACKWARD is non-nil, it finds the previous reference."
-  (interactive)
+  (interactive "i" org-mode)
 
   ;; If we're in the *footnote-editor* buffer...
-  (if (string-equal (buffer-name) "*footnote-editor*")
+  (when (string-equal (buffer-name) "*footnote-editor*")
       ;; If the base buffer is already open in another window, go to that window
       (if (get-buffer-window (buffer-name (buffer-base-buffer)))
           (select-window (get-buffer-window (buffer-name (buffer-base-buffer))))
@@ -164,29 +166,27 @@ BACKWARD is non-nil, it finds the previous reference."
         (forward-char)
         (org-footnote-assistant--show-definition)))))
 
+;;;###autoload
 (defun org-footnote-assistant-goto-previous-footnote ()
   "Searches previous footnote reference. A wrapper
 for (org-footnote-assistant-goto-next-footnote t)"
-  (interactive)
-  (org-footnote-assistant-goto-next-footnote t)
-  )
+  (interactive "i" org-mode)
+  (org-footnote-assistant-goto-next-footnote t))
 
 
 ;; Footnote editing/deleting functions
 
+;;;###autoload
 (defun org-footnote-assistant-delete-footnote ()
   "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
-  (interactive)
+  (interactive "i" org-mode)
   (let* ((label (org-footnote-assistant--get-label)))
-    (if (or (not org-footnote-assistant-ask-before-delete)
+    (when (or (not org-footnote-assistant-ask-before-delete)
             (y-or-n-p (concat "Really delete footnote " label "? ")))
         (if (buffer-base-buffer)
             (with-current-buffer (buffer-base-buffer)
-              (org-footnote-delete label)
-              )
-          (org-footnote-delete label)
-          )
-      )))
+              (org-footnote-delete label))
+          (org-footnote-delete label)))))
 
 
 ;;; Advised functions: they modify the behavior of org-footnote.el functions
@@ -204,7 +204,7 @@ reached from current narrowed part of buffer.  Return a non-nil
 value if point was successfully moved."
   (interactive "sLabel: ")
   (let* ((label (org-footnote-normalize-label label))
-	       (def-start (or location (nth 1 (org-footnote-get-definition label))))
+         (def-start (or location (nth 1 (org-footnote-get-definition label))))
          (def-end (nth 2 (org-footnote-get-definition label))))
     (cond
      ((not def-start)
@@ -218,10 +218,11 @@ value if point was successfully moved."
     (org-fold-show-context 'link-search)
     (when (derived-mode-p 'org-mode)
       (message "%s" (substitute-command-keys
-		     "Edit definition and go back with \
+                     "Edit definition and go back with \
 `\\[org-mark-ring-goto]' or, if unique, with `\\[org-ctrl-c-ctrl-c]'.")))
     t))
 
+;;;###autoload
 (defun org-goto-previous-reference-advice (orig-fun &rest args)
   (if (eq (current-buffer) (get-buffer "*footnote-editor*"))
       (let ((base-buffer (buffer-base-buffer)))
@@ -234,13 +235,11 @@ value if point was successfully moved."
 
 (defun org-footnote-assistant--add-advices ()
   (advice-add 'org-footnote-goto-definition :override #'org-footnote-assistant--goto-definition)
-  (advice-add 'org-footnote-goto-previous-reference :around #'org-goto-previous-reference-advice)
-  )
+  (advice-add 'org-footnote-goto-previous-reference :around #'org-goto-previous-reference-advice))
 
 (defun org-footnote-assistant--remove-advices ()
   (advice-remove 'org-footnote-goto-definition 'org-footnote-assistant--goto-definition)
-  (advice-remove 'org-footnote-goto-previous-reference 'org-goto-previous-reference-advice)
- )
+  (advice-remove 'org-footnote-goto-previous-reference 'org-goto-previous-reference-advice))
 
 
 ;;; Minor mode
@@ -257,12 +256,12 @@ value if point was successfully moved."
   :global t
   :group 'org
   :lighter " ofa"
+  :interactive '(org-mode)
 
   (if org-footnote-assistant-mode
       (progn
         (message "org-footnote-assistant mode activated!")
-        (org-footnote-assistant--add-advices)
-        )
+        (org-footnote-assistant--add-advices))
     (progn
       (org-footnote-assistant--remove-advices)
       (org-footnote-assistant--delete-editor-window)
