@@ -45,6 +45,9 @@
 
 ;;; Code:
 
+;; Dependencies
+(require 'org)
+
 
 ;;; Constants and customization
 
