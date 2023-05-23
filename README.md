@@ -82,6 +82,26 @@ enhances the overall experience of working with footnotes in Org Mode by
 simplifying navigation and providing a dedicated editing environment for
 footnote definitions.
 
+## Usage
+
+`org-footnote-assistant` is not yet available on ELPA/MELPA, and needs to be checked 
+out directly from git.
+
+Installation with `straight.el`:
+
+```emacs-lisp
+(straight-use-package '(org-footnote-assistant :type git :host github :repo "lazzalazza/org-footnote-assistant"))
+```
+
+Sample `use-package` configuration:
+
+```emacs-lisp
+(use-package org-footnote-assistant
+  :commands (org-footnote-assistant)
+  :after (org)
+  :init
+  (org-footnote-assistant-mode 1))
+```
 
 ## Feedback and Collaboration
 
