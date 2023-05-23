@@ -102,7 +102,7 @@
 (defun org-footnote-assistant--show-definition ()
   "Narrows the buffer to the region of the current footnote
 definition, if the point is currently at a footnote reference."
-  (interactive "i" org-mode)
+  (interactive)
   (when (org-footnote-at-reference-p)
     ;; Get the label of the current footnote.
     (let* ((label (org-element-property :label (org-element-context)))
@@ -141,7 +141,7 @@ definition, if the point is currently at a footnote reference."
 (defun org-footnote-assistant-goto-next-footnote (&optional backward)
   "Finds the next footnote and opens the narrowed buffer. If
 BACKWARD is non-nil, it finds the previous reference."
-  (interactive "i" org-mode)
+  (interactive)
 
   ;; If we're in the *footnote-editor* buffer...
   (when (string-equal (buffer-name) "*footnote-editor*")
@@ -170,7 +170,7 @@ BACKWARD is non-nil, it finds the previous reference."
 (defun org-footnote-assistant-goto-previous-footnote ()
   "Searches previous footnote reference. A wrapper
 for (org-footnote-assistant-goto-next-footnote t)"
-  (interactive "i" org-mode)
+  (interactive)
   (org-footnote-assistant-goto-next-footnote t))
 
 
@@ -179,7 +179,7 @@ for (org-footnote-assistant-goto-next-footnote t)"
 ;;;###autoload
 (defun org-footnote-assistant-delete-footnote ()
   "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
-  (interactive "i" org-mode)
+  (interactive)
   (let* ((label (org-footnote-assistant--get-label)))
     (when (or (not org-footnote-assistant-ask-before-delete)
             (y-or-n-p (concat "Really delete footnote " label "? ")))
