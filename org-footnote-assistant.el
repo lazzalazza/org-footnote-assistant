@@ -113,7 +113,7 @@ definition, if the point is currently at a footnote reference."
 
 (defun org-footnote-assistant--create-editor-window (begin end)
   (let ((buf (get-buffer "*footnote-editor*")))
-    (if buf
+    (when buf
         (if (org-footnote-assistant--current-buffer-related-to-editor-p)
             ;; If the buffer exists and is related to the current buffer,
             ;; narrow to the footnote definition region and display the buffer.
@@ -144,7 +144,7 @@ BACKWARD is non-nil, it finds the previous reference."
   (interactive)
 
   ;; If we're in the *footnote-editor* buffer...
-  (if (string-equal (buffer-name) "*footnote-editor*")
+  (when (string-equal (buffer-name) "*footnote-editor*")
       ;; If the base buffer is already open in another window, go to that window
       (if (get-buffer-window (buffer-name (buffer-base-buffer)))
           (select-window (get-buffer-window (buffer-name (buffer-base-buffer))))
@@ -181,7 +181,7 @@ for (org-footnote-assistant-goto-next-footnote t)"
   "Deletes footnote reference and definition. Wrapper for org-footnote-delete."
   (interactive)
   (let* ((label (org-footnote-assistant--get-label)))
-    (if (or (not org-footnote-assistant-ask-before-delete)
+    (when (or (not org-footnote-assistant-ask-before-delete)
             (y-or-n-p (concat "Really delete footnote " label "? ")))
         (if (buffer-base-buffer)
             (with-current-buffer (buffer-base-buffer)
