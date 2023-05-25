@@ -60,6 +60,9 @@
                                        ;; automatically set by the
                                        ;; define-minor-mode command
 
+
+;;TODO Set custom key combination for next and previous footnote
+
 
 ;;; Getters
 
@@ -244,10 +247,11 @@ value if point was successfully moved."
 
 ;;; Minor mode
 
+;;TODO Set custom key combination for next and previous footnote
 (defvar org-footnote-assistant-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-n") 'org-footnote-assistant-goto-next-footnote)
-    (define-key map (kbd "C-c C-p") 'org-footnote-assistant-goto-previous-footnote)
+    (define-key map (kbd "C-c f n") 'org-footnote-assistant-goto-next-footnote)
+    (define-key map (kbd "C-c f p") 'org-footnote-assistant-goto-previous-footnote)
     map))
 
 (define-minor-mode org-footnote-assistant-mode
