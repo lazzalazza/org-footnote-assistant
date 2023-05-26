@@ -84,7 +84,7 @@ footnote definitions.
 
 ## Usage
 
-`org-footnote-assistant` is not yet available on ELPA/MELPA, and needs to be checked 
+`org-footnote-assistant` is not yet available on ELPA/MELPA, and needs to be checked.
 out directly from git.
 
 Installation with `straight.el`:
@@ -93,7 +93,14 @@ Installation with `straight.el`:
 (straight-use-package '(org-footnote-assistant :type git :host github :repo "lazzalazza/org-footnote-assistant"))
 ```
 
-Sample `use-package` configuration:
+Easy setup:
+
+```emacs-lisp
+  (require 'org-footnote-assistant)
+  (org-footnote-assistant-mode 1)
+```
+
+Alternatively, you could use this sample `use-package` configuration:
 
 ```emacs-lisp
 (use-package org-footnote-assistant
