@@ -2,7 +2,7 @@
 
 ;; Author: Andrea Lazzarini
 ;; Maintainer: Andrea Lazzarini
-;; Version: 0.01
+;; Version: 0.02
 ;; Package-Requires: ((org "8.0.0"))
 ;; Homepage: https://github.com/lazzalazza/org-footnote-assistant/
 ;; Keywords: org-footnote, org-mode
@@ -43,11 +43,36 @@
 ;; deleting the footnote. However, you can customize this behavior by setting
 ;; the variable 'org-footnote-assistant-ask-before-delete' to nil.
 
+;; Version 0.02
+;;
+;; Bugfix release.
+;;
+;; - Fixed a major issue where the first time a footnote was opened,
+;;   the narrowing occurred in the previously active buffer instead
+;;   of the current Org buffer. This was due to the indirect buffer
+;;   being cloned before saving the correct source buffer reference.
+;;   The function `org-footnote-assistant--create-editor-window` now
+;;   explicitly saves the source buffer, creates the indirect buffer
+;;   from it, and performs narrowing only within the editor buffer.
+;;
+;; - Added explicit `(widen)` calls before narrowing to avoid
+;;   residual narrowing from previous footnotes.
+;;
+;; - Changed the minor mode from global to buffer-local (`:global nil`)
+;;   so that it activates only in Org buffers (typically via `org-mode-hook`).
+;;
+;; - Improved stability and window-switching behavior when navigating
+;;   between footnote references and definitions.
+;;
+
+;; TODO: When reordering notes, add an advice that regenerates the editor
+;; buffer to avoid errors.
+
 ;;; Code:
 
+
 ;; Dependencies
 (require 'org)
-
 
 ;;; Constants and customization
 
@@ -57,8 +82,8 @@
   "Whether to ask for permission before deleting a footnote."
   :type 'boolean
   :group 'org-footnote-assistant-mode) ;; the org-footnote-assistant-mode is
-                                       ;; automatically set by the
-                                       ;; define-minor-mode command
+;; automatically set by the
+;; define-minor-mode command
 
 
 ;;TODO Set custom key combination for next and previous footnote
@@ -115,27 +140,27 @@ definition, if the point is currently at a footnote reference."
       (org-footnote-assistant--create-editor-window definition-begin definition-end))))
 
 (defun org-footnote-assistant--create-editor-window (begin end)
-  (let ((buf (get-buffer "*footnote-editor*")))
+  (let* ((source (current-buffer))                     ;; <— save the right buffer
+         (buf (get-buffer "*footnote-editor*")))
     (when buf
-        (if (org-footnote-assistant--current-buffer-related-to-editor-p)
-            ;; If the buffer exists and is related to the current buffer,
-            ;; narrow to the footnote definition region and display the buffer.
-            (with-current-buffer buf
-              (narrow-to-region begin end)
-              (pop-to-buffer buf t)
-              (beginning-of-buffer))
-          ;; If the buffer exists but is not related to the current buffer,
-          ;; kill it and create a new indirect buffer.
-          (progn
-            (kill-buffer buf)
-            (setq buf nil))))
-    ;; If the buffer does not exist, create a new indirect buffer.
+      (if (with-current-buffer buf
+            (eq (buffer-base-buffer) source))          ;; same base buffer?
+          (with-current-buffer buf
+            (widen)
+            (narrow-to-region begin end)
+            (pop-to-buffer buf t)
+            (goto-char (point-min)))
+        (kill-buffer buf)
+        (setq buf nil)))
     (unless buf
-      (setq buf (switch-to-buffer-other-window (clone-indirect-buffer "*footnote-editor*" nil))))
-
-    ;; Narrow to the footnote definition region in the buffer.
+      ;; crea l’indiretto *dal buffer salvato*, poi mostrala
+      (setq buf (make-indirect-buffer source "*footnote-editor*" t))
+      (pop-to-buffer buf t))
+    ;; restringi solo nell’editor
     (with-current-buffer buf
-      (narrow-to-region begin end))))
+      (widen)
+      (narrow-to-region begin end)
+      (goto-char (point-min)))))
 
 
 ;;; Scrolling functions
@@ -148,11 +173,11 @@ BACKWARD is non-nil, it finds the previous reference."
 
   ;; If we're in the *footnote-editor* buffer...
   (when (string-equal (buffer-name) "*footnote-editor*")
-      ;; If the base buffer is already open in another window, go to that window
-      (if (get-buffer-window (buffer-name (buffer-base-buffer)))
-          (select-window (get-buffer-window (buffer-name (buffer-base-buffer))))
-        ;; Otherwise, switch to the base buffer
-        (switch-to-buffer (buffer-base-buffer))))
+    ;; If the base buffer is already open in another window, go to that window
+    (if (get-buffer-window (buffer-name (buffer-base-buffer)))
+        (select-window (get-buffer-window (buffer-name (buffer-base-buffer))))
+      ;; Otherwise, switch to the base buffer
+      (switch-to-buffer (buffer-base-buffer))))
 
   ;; If we're not in the *footnote-editor* buffer...
   (if (not backward)
@@ -185,11 +210,11 @@ for (org-footnote-assistant-goto-next-footnote t)"
   (interactive)
   (let* ((label (org-footnote-assistant--get-label)))
     (when (or (not org-footnote-assistant-ask-before-delete)
-            (y-or-n-p (concat "Really delete footnote " label "? ")))
-        (if (buffer-base-buffer)
-            (with-current-buffer (buffer-base-buffer)
-              (org-footnote-delete label))
-          (org-footnote-delete label)))))
+              (y-or-n-p (concat "Really delete footnote " label "? ")))
+      (if (buffer-base-buffer)
+          (with-current-buffer (buffer-base-buffer)
+            (org-footnote-delete label))
+        (org-footnote-delete label)))))
 
 
 ;;; Advised functions: they modify the behavior of org-footnote.el functions
@@ -257,7 +282,7 @@ value if point was successfully moved."
 (define-minor-mode org-footnote-assistant-mode
   "Toggles org-footnote-assistant-mode"
   :init-value nil
-  :global t
+  :global nil
   :group 'org
   :lighter " ofa"
   :interactive '(org-mode)
@@ -274,6 +299,3 @@ value if point was successfully moved."
 (provide 'org-footnote-assistant)
 
 ;;; org-footnote-assistant.el ends here
-
-
-
