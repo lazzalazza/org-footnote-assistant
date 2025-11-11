@@ -32,9 +32,9 @@ Mode keymap to facilitate working with footnotes.
 Here is an overview of the functionality provided by **org-footnote-assistant**:
 
 1. **Navigation:** The package allows you to quickly navigate between footnote
-   references in an Org Mode buffer. The keybinding `C-c C-n`
+   references in an Org Mode buffer. The keybinding `C-c f n`
    (`org-footnote-assistant-goto-next-footnote`) moves the cursor to the next
-   footnote reference in the buffer, while `C-c C-p`
+   footnote reference in the buffer, while `C-c f p`
    (`org-footnote-assistant-goto-previous-footnote`) moves to the previous
    footnote reference.
 
